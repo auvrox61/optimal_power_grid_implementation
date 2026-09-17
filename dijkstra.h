@@ -1,6 +1,8 @@
 #ifndef DIJKSTRA_H
 #define DIJKSTRA_H
 
+#define DIJKSTRA_H
+
 #include "types.h"
 #include <vector>
 #include <queue>
@@ -8,16 +10,10 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
-#include <functional>
 #include <utility>
-#include <limits>
-
-#ifndef INF
-constexpr double INF = std::numeric_limits<double>::infinity();
-#endif
 
 struct DijkstraEdge {
-    int to;
+    int    to;
     double loss;
     double capacityMW;
 };
@@ -27,15 +23,20 @@ public:
     int numNodes;
     std::vector<std::vector<DijkstraEdge>> adjList;
 
-    explicit DijkstraGraph(int n) : numNodes(n), adjList(n) {}
+    explicit DijkstraGraph(int n)
+        : numNodes(n), adjList(n) {}
 
     void addEdge(int from, int to, double loss, double capacity) {
-        adjList[from].push_back({to, loss, capacity});
+        DijkstraEdge edge;
+        edge.to         = to;
+        edge.loss       = loss;
+        edge.capacityMW = capacity;
+        adjList[from].push_back(edge);
     }
 
     struct Result {
         std::vector<double> dist;
-        std::vector<int> parent;
+        std::vector<int>    parent;
     };
 
     Result run(int source) const {
@@ -44,27 +45,31 @@ public:
         res.parent.assign(numNodes, -1);
         res.dist[source] = 0.0;
 
-        using pdi = std::pair<double, int>;
-        std::priority_queue<pdi, std::vector<pdi>, std::greater<pdi>> pq;
+        typedef std::pair<double, int> pdi;
+        std::priority_queue<pdi,
+                            std::vector<pdi>,
+                            std::greater<pdi> > pq;
 
-        pq.push({0.0, source});
+        pq.push(std::make_pair(0.0, source));
 
         while (!pq.empty()) {
-            pdi topPair = pq.top();
-            double d = topPair.first;
-            int u = topPair.second;
+            pdi top = pq.top();
             pq.pop();
 
-            if (d > res.dist[u])
-                continue;
+            double d = top.first;
+            int    u = top.second;
 
-            for (const auto& e : adjList[u]) {
+            if (d > res.dist[u]) continue;
+
+            for (int i = 0; i < (int)adjList[u].size(); i++) {
+                const DijkstraEdge& e = adjList[u][i];
+
                 double newDist = res.dist[u] + e.loss;
 
                 if (newDist < res.dist[e.to]) {
-                    res.dist[e.to] = newDist;
+                    res.dist[e.to]   = newDist;
                     res.parent[e.to] = u;
-                    pq.push({newDist, e.to});
+                    pq.push(std::make_pair(newDist, e.to));
                 }
             }
         }
@@ -75,57 +80,59 @@ public:
     std::vector<int> getPath(const Result& res, int target) const {
         std::vector<int> path;
 
-        if (res.dist[target] == INF)
-            return path;
+        if (res.dist[target] == INF) return path;
 
         for (int v = target; v != -1; v = res.parent[v])
             path.push_back(v);
 
         std::reverse(path.begin(), path.end());
-
         return path;
     }
 
     void printMinLossPaths(
-        int source,
-        const std::vector<std::string>& nodeNames,
-        const std::vector<int>& demandNodeIds
-    ) const {
+            int source,
+            const std::vector<std::string>& nodeNames,
+            const std::vector<int>& demandNodeIds) const {
+
         Result res = run(source);
 
-        std::cout << "\n========================================\n";
-        std::cout << "  MINIMUM-LOSS PATHS (Dijkstra)\n";
-        std::cout << "  Source: " << nodeNames[source] << "\n";
-        std::cout << "========================================\n";
+        std::cout << "\n  [Dijkstra] Source: "
+                  << nodeNames[source] << "\n";
+        std::cout << "  "
+                  << std::string(70, '-') << "\n";
 
-        for (int target : demandNodeIds) {
-            std::cout << "  → " << std::left << std::setw(22)
+        for (int i = 0; i < (int)demandNodeIds.size(); i++) {
+            int target = demandNodeIds[i];
+
+            std::cout << "  -> "
+                      << std::left
+                      << std::setw(28)
                       << nodeNames[target];
 
             if (res.dist[target] == INF) {
-                std::cout << "  [UNREACHABLE]\n";
+                std::cout << "[UNREACHABLE]\n";
                 continue;
             }
 
-            std::cout << "  Total Loss: "
-                      << std::fixed << std::setprecision(4)
+            std::cout << "Loss: "
+                      << std::fixed
+                      << std::setprecision(2)
                       << res.dist[target] * 100.0
-                      << "%  |  Path: ";
+                      << "%   Path: ";
 
-            auto path = getPath(res, target);
+            std::vector<int> path = getPath(res, target);
 
-            for (int i = 0; i < static_cast<int>(path.size()); i++) {
-                if (i)
-                    std::cout << " → ";
-
-                std::cout << nodeNames[path[i]];
+            for (int j = 0; j < (int)path.size(); j++) {
+                if (j > 0) std::cout << " -> ";
+                std::cout << nodeNames[path[j]];
             }
 
             std::cout << "\n";
         }
 
-        std::cout << "========================================\n";
+        std::cout << "  "
+                  << std::string(70, '-') << "\n";
     }
 };
 
-#endif 
+#endif

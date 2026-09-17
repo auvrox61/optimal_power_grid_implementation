@@ -4,8 +4,13 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <iostream>
+#include <iomanip>
 
+#ifndef GRID_INF
+#define GRID_INF
 const double INF = std::numeric_limits<double>::infinity();
+#endif
 
 enum class FuelType {
     GAS,
@@ -15,7 +20,7 @@ enum class FuelType {
     NUCLEAR
 };
 
-std::string fuelTypeToString(FuelType f) {
+inline std::string fuelTypeToString(FuelType f) {
     switch (f) {
         case FuelType::GAS:     return "Gas";
         case FuelType::COAL:    return "Coal";
@@ -32,7 +37,7 @@ enum class PriorityTier {
     TIER3 = 3
 };
 
-std::string tierToString(PriorityTier t) {
+inline std::string tierToString(PriorityTier t) {
     switch (t) {
         case PriorityTier::TIER1: return "Tier-1 (Critical)";
         case PriorityTier::TIER2: return "Tier-2 (Industrial/EPZ)";

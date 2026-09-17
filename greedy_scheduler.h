@@ -12,9 +12,7 @@ class GreedyScheduler {
 public:
     static std::vector<LoadSheddingWindow>
     schedule(std::vector<LoadSheddingWindow>& windows) {
-
-        if (windows.empty())
-            return {};
+        if (windows.empty()) return {};
 
         std::sort(windows.begin(), windows.end(),
                   [](const LoadSheddingWindow& a,
@@ -36,9 +34,10 @@ public:
     }
 
     static std::vector<LoadSheddingWindow>
-    fairSchedule(const std::vector<ConsumerZone>& tier3Zones,
-                 const std::vector<std::pair<double, double>>& timeSlots,
-                 double deficitMW) {
+    fairSchedule(
+        const std::vector<ConsumerZone>& tier3Zones,
+        const std::vector<std::pair<double,double>>& timeSlots,
+        double deficitMW) {
 
         std::vector<LoadSheddingWindow> candidates;
 
@@ -46,21 +45,23 @@ public:
             return candidates;
 
         double remainingDeficit = deficitMW;
-        int zoneIdx = 0;
+        int zoneIdx  = 0;
         int numZones = static_cast<int>(tier3Zones.size());
 
         for (const auto& slot : timeSlots) {
-            if (remainingDeficit <= 0.0)
+            if (remainingDeficit <= 1e-9)
                 break;
 
-            const ConsumerZone& zone = tier3Zones[zoneIdx % numZones];
+            const ConsumerZone& zone =
+                tier3Zones[zoneIdx % numZones];
 
             double shedable =
                 zone.peakDemandMW - zone.minGuaranteedSupplyMW;
 
-            double toShed = std::min(shedable, remainingDeficit);
+            double toShed =
+                std::min(shedable, remainingDeficit);
 
-            if (toShed > 0.0) {
+            if (toShed > 1e-9) {
                 candidates.emplace_back(
                     zone.id,
                     zone.name,
@@ -79,7 +80,7 @@ public:
     }
 
     static void printSchedule(
-        const std::vector<LoadSheddingWindow>& windows) {
+            const std::vector<LoadSheddingWindow>& windows) {
 
         std::cout << "\n========================================\n";
         std::cout << "  LOAD-SHEDDING SCHEDULE (Greedy)\n";
@@ -92,40 +93,40 @@ public:
         }
 
         std::cout << std::left
-                  << std::setw(25) << "Zone"
-                  << std::setw(12) << "Start (h)"
-                  << std::setw(12) << "End (h)"
-                  << std::setw(12) << "Duration"
-                  << std::setw(14) << "Shed (MW)"
+                  << std::setw(28) << "Zone"
+                  << std::setw(12) << "Start(h)"
+                  << std::setw(12) << "End(h)"
+                  << std::setw(12) << "Dur(h)"
+                  << std::setw(12) << "Shed(MW)"
                   << "\n";
 
-        std::cout << std::string(75, '-') << "\n";
+        std::cout << std::string(76, '-') << "\n";
 
         double totalShed = 0.0;
-        double totalDuration = 0.0;
+        double totalDur = 0.0;
 
         for (const auto& w : windows) {
             std::cout << std::left
-                      << std::setw(25) << w.zoneName
+                      << std::setw(28) << w.zoneName
                       << std::setw(12) << std::fixed
                       << std::setprecision(1) << w.startHour
                       << std::setw(12) << w.endHour
                       << std::setw(12) << w.duration()
-                      << std::setw(14) << w.loadShedMW
+                      << std::setw(12) << w.loadShedMW
                       << "\n";
 
             totalShed += w.loadShedMW;
-            totalDuration += w.duration();
+            totalDur  += w.duration();
         }
 
-        std::cout << std::string(75, '-') << "\n";
+        std::cout << std::string(76, '-') << "\n";
 
         std::cout << std::left
-                  << std::setw(25) << "TOTAL"
+                  << std::setw(28) << "TOTAL"
                   << std::setw(12) << ""
                   << std::setw(12) << ""
-                  << std::setw(12) << totalDuration
-                  << std::setw(14) << totalShed
+                  << std::setw(12) << totalDur
+                  << std::setw(12) << totalShed
                   << "\n";
 
         std::cout << "========================================\n";

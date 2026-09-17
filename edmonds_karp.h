@@ -13,7 +13,7 @@ class EdmondsKarp {
 public:
     int numNodes;
     std::vector<std::vector<double>> cap;
-    std::vector<std::vector<int>> graph;
+    std::vector<std::vector<int>>    graph;
 
     explicit EdmondsKarp(int n)
         : numNodes(n),
@@ -33,7 +33,7 @@ public:
 
         q.push(source);
         visited[source] = true;
-        parent[source] = -1;
+        parent[source]  = -1;
 
         while (!q.empty()) {
             int u = q.front();
@@ -41,11 +41,10 @@ public:
 
             for (int v : graph[u]) {
                 if (!visited[v] && cap[u][v] > 1e-9) {
-                    parent[v] = u;
+                    parent[v]  = u;
                     visited[v] = true;
 
-                    if (v == sink)
-                        return true;
+                    if (v == sink) return true;
 
                     q.push(v);
                 }
@@ -69,6 +68,7 @@ public:
 
             for (int v = sink; v != source; v = parent[v]) {
                 int u = parent[v];
+
                 cap[u][v] -= pathFlow;
                 cap[v][u] += pathFlow;
             }
@@ -85,8 +85,8 @@ public:
         std::cout << "\n========================================\n";
         std::cout << "  MAXIMUM POWER FLOW (Edmonds-Karp)\n";
         std::cout << "========================================\n";
-        std::cout << "  Source : " << sourceName << "\n";
-        std::cout << "  Sink   : " << sinkName << "\n";
+        std::cout << "  Source  : " << sourceName << "\n";
+        std::cout << "  Sink    : " << sinkName   << "\n";
         std::cout << "  Max Flow: "
                   << std::fixed << std::setprecision(2)
                   << flow << " MW\n";
